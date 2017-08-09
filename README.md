@@ -1,4 +1,4 @@
-![Logo](LOGO.png)
+[![Logo](LOGO.png)](https://do9.kr/)
 
 'DO9' is a word that combined the word 'DO' and the number '9'.
 
