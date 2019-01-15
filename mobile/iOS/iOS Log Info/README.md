@@ -6,7 +6,7 @@
 
 ## Capture Crash logs:
 `sdsioscrashlog.exe -e -k crash_logs`  
-(To capture the crash log, create crash_logs directory)
+(To capture crash logs, create crash_logs directory)
 
 ## Pull Disk Usage:
 `sdsdeviceinfo.exe -q com.apple.disk_usage -x > iOS_Disk_Usage.xml`  
