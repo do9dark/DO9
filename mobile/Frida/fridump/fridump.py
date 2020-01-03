@@ -71,9 +71,9 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=DEBUG_LEVEL)
 # Start a new Session
 session = None
 try:
+    if APP_PID:
+        APP_NAME = int(APP_NAME)
     if USB:
-        if APP_PID:
-            APP_NAME = int(APP_NAME)
         # session = frida.get_usb_device().attach(APP_NAME)
         os.system("adb forward tcp:27042 tcp:27042")
         session = frida.get_device_manager().enumerate_devices()[-1].attach(APP_NAME)
