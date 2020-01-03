@@ -33,6 +33,8 @@ def MENU():
                         help='provide full output directory path. (def: \'dump\')')
     parser.add_argument('-U', '--usb', action='store_true',
                         help='device connected over usb')
+    parser.add_argument('-p', '--pid', action='store_true',
+                        help='pid instead of process name')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='verbose')
     parser.add_argument('-r', '--read-only', action='store_true',
@@ -44,13 +46,13 @@ def MENU():
     args = parser.parse_args()
     return args
 
-
 print(logo)
 
 arguments = MENU()
 
 # Define Configurations
 APP_NAME = arguments.process
+APP_PID = arguments.pid
 DIRECTORY = ""
 USB = arguments.usb
 DEBUG_LEVEL = logging.INFO
@@ -70,7 +72,11 @@ logging.basicConfig(format='%(levelname)s:%(message)s', level=DEBUG_LEVEL)
 session = None
 try:
     if USB:
-        session = frida.get_usb_device().attach(APP_NAME)
+        if APP_PID:
+            APP_NAME = int(APP_NAME)
+        # session = frida.get_usb_device().attach(APP_NAME)
+        os.system("adb forward tcp:27042 tcp:27042")
+        session = frida.get_device_manager().enumerate_devices()[-1].attach(APP_NAME)
     else:
         session = frida.attach(APP_NAME)
 except Exception as e:
@@ -90,7 +96,7 @@ if arguments.out is not None:
 
 else:
     print("Current Directory: " + str(os.getcwd()))
-    DIRECTORY = os.path.join(os.getcwd(), "dump")
+    DIRECTORY = os.path.join(os.getcwd(), "dump_" + str(APP_NAME))
     print("Output directory is set to: " + DIRECTORY)
     if not os.path.exists(DIRECTORY):
         print("Creating directory...")
