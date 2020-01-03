@@ -38,7 +38,7 @@ def MENU():
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='verbose')
     parser.add_argument('-r', '--read-only', action='store_true',
-                        help="dump read-only parts of memory. More data, more errors")
+                        help='dump read-only parts of memory. More data, more errors.')
     parser.add_argument('-s', '--strings', action='store_true',
                         help='run strings on all dump files. Saved in output dir.')
     parser.add_argument('--max-size', type=int, metavar="bytes",
