@@ -75,7 +75,7 @@ try:
         APP_NAME = int(APP_NAME)
     if USB:
         # session = frida.get_usb_device().attach(APP_NAME)
-        os.system("adb forward tcp:27042 tcp:27042")
+        # os.system("adb forward tcp:27042 tcp:27042")
         session = frida.get_device_manager().enumerate_devices()[-1].attach(APP_NAME)
     else:
         session = frida.attach(APP_NAME)
