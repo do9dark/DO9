@@ -299,4 +299,18 @@
 
             <div class="panel_proc">
                 <asp:Panel ID="panel_procress" runat="server" Width="100%" Direction="LeftToRight" HorizontalAlign="Left" Visible="False">
-                    <asp:ListBox
+                    <asp:ListBox ID="ListBox1" runat="server" Width="340px" Height="130px" SelectionMode="Single"></asp:ListBox>
+                    <asp:Button ID="Button_kill" runat="server" Text="End Process" Width="84px" Height="20px" />
+                    <asp:Button ID="Button4" runat="server" Text="Refresh" Width="64px" Height="20px" />
+                </asp:Panel>
+            </div>
+
+            <div class="editfile">
+                <asp:TextBox ID="TextBox_MAIN" runat="server" TextMode="MultiLine" Width="96%" Height="300px" Visible="False"></asp:TextBox>
+                <asp:Button ID="filesave" runat="server" Text="Save" />
+                <asp:Button ID="init" runat="server" Text="Reset" />
+            </div>
+        </div>
+    </form>
+</body>
+</html>
