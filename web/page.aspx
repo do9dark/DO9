@@ -307,8 +307,8 @@
 
             <div class="editfile">
                 <asp:TextBox ID="TextBox_MAIN" runat="server" TextMode="MultiLine" Width="96%" Height="300px" Visible="False"></asp:TextBox>
-                <asp:Button ID="filesave" runat="server" Text="Save" />
-                <asp:Button ID="init" runat="server" Text="Reset" />
+                <asp:Button ID="filesave" runat="server" Text="Save" OnClick="filesave_Click" />
+                <asp:Button ID="init" runat="server" Text="Reset" OnClick="init_Click" />
             </div>
         </div>
     </form>
